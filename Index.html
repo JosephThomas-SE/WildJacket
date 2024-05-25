@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tent Camping</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <script defer src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script defer src="/assets/js/script.js"></script>
+    <script defer src="https://apis.google.com/js/api.js"></script>
+</head>
+<body>
+    <header>
+        <div class="menu-icon" id="menuIcon" onclick="toggleMenu()">&#9776;</div>
+        <div class="logo">
+            <a href="#home"><img src="/assets/images/Logo.jpg" alt="Logo" class="logo-img"></a>
+        </div>
+        <nav id="sidebarMenu" class="sidebar">
+            <ul>
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About Us</a></li>
+                <li><a href="#gallery" class="nav-link">Photo Gallery</a></li>
+                <li><a href="#reviews" class="nav-link">User Reviews</a></li>
+                <li><a href="#locations" class="nav-link">Camp Location</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home" class="section home">
+        <h1>Welcome to Tent Camping Adventures</h1>
+        <p>Experience the best camping spots with us!</p>
+    </section>
+
+    <section id="about" class="section about">
+        <h2>About Us</h2>
+        <p>Learn more about our mission and what makes us the best choice for your camping adventures.</p>
+    </section>
+
+    <section id="gallery" class="section gallery">
+        <h2>Photo Gallery</h2>
+        <div class="gallery-container">
+            <!-- Photos will be dynamically loaded here -->
+        </div>
+    </section>
+
+    <section id="reviews" class="section reviews">
+        <h2>User Reviews</h2>
+        <div class="reviews-container">
+            <!-- User reviews will be dynamically loaded here -->
+        </div>
+    </section>
+
+    <section id="locations" class="section locations">
+        <h2>Campsite Locations</h2>
+        <div id="map"></div>
+    </section>
+
+    <section id="contact" class="section contact">
+        <h2>Contact Us</h2>
+        <p>Phone: +91 6238570441</p>
+        <p>Instagram: <a href="https://www.instagram.com/wild_jacket_vagamon" target="_blank">@Wild Jacket</a></p>
+    </section>
+
+    <footer>
+        <p id="yearUpdate"></p>
+    </footer>
+</body>
+</html>
