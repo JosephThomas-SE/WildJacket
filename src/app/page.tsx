@@ -1,12 +1,16 @@
+import { PageShell } from '@/components/layout/PageShell';
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-white">
-      <div className="max-w-3xl rounded-3xl bg-slate-900/70 p-10 shadow-2xl shadow-slate-950/30 ring-1 ring-white/10 backdrop-blur">
-        <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl">Welcome to WildJacket</h1>
-        <p className="mt-6 text-xl text-slate-300">
-          Your Next.js app is ready with TypeScript, Tailwind CSS, ESLint, and Turbopack.
-        </p>
-      </div>
-    </main>
+    <PageShell>
+      <section className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-8 shadow-soft backdrop-blur-xl">
+          <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">WildJacket</h1>
+          <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+            A scalable Next.js architecture built for production with Tailwind CSS, Supabase, and App Router conventions.
+          </p>
+        </div>
+      </section>
+    </PageShell>
   );
 }

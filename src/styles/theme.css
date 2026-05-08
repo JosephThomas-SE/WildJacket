@@ -1,0 +1,26 @@
+:root {
+  --bg: #020617;
+  --surface: #08101f;
+  --surface-strong: #0f172a;
+  --border: rgba(148, 163, 184, 0.16);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --accent: #38bdf8;
+  --ring: rgba(14, 165, 233, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.3);
+  color: #ffffff;
+}
