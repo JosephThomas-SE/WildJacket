@@ -3,6 +3,9 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 import { getRequiredEnv } from '@/lib/env';
+import type { Role } from '@/lib/roles';
+import { ADMIN_ROLES, SUPER_ADMIN_ROLES, getRoleFromSession } from '@/lib/roles';
+import { requireRole as enforceRole } from '@/lib/permissions';
 
 const supabaseUrl = getRequiredEnv('SUPABASE_URL');
 const serviceRoleKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
@@ -31,13 +34,19 @@ export async function requireUser() {
   return data.session;
 }
 
-export async function requireRole(allowedRoles: string[]) {
+export async function requireRole(allowedRoles: Role | Role[]) {
   const session = await requireUser();
-  const role = session.user.app_metadata?.role || session.user.user_metadata?.role;
+  const role = getRoleFromSession(session);
 
-  if (!role || (Array.isArray(allowedRoles) ? !allowedRoles.includes(role) : role !== allowedRoles[0])) {
-    throw new Error('Insufficient permissions');
-  }
+  enforceRole(role, allowedRoles);
 
   return session;
+}
+
+export async function requireAdmin() {
+  await requireRole(ADMIN_ROLES);
+}
+
+export async function requireSuperAdmin() {
+  await requireRole(SUPER_ADMIN_ROLES);
 }
