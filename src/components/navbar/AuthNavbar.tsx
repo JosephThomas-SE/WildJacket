@@ -20,6 +20,9 @@ export function AuthNavbar() {
           <Link href="/dashboard" className="rounded-full px-4 py-2 text-forest-700 dark:text-forest-300 hover:bg-forest-100 dark:hover:bg-forest-900/30 transition-colors duration-200">
             Dashboard
           </Link>
+          <Link href="/bookings" className="rounded-full px-4 py-2 text-forest-700 dark:text-forest-300 hover:bg-forest-100 dark:hover:bg-forest-900/30 transition-colors duration-200">
+            Bookings
+          </Link>
           {loading ? (
             <span className="inline-flex items-center rounded-full px-4 py-2 text-earth-600 dark:text-earth-400">Loading...</span>
           ) : user ? (
