@@ -23,66 +23,98 @@ export interface Database {
           avatar_url?: string | null;
         };
       };
-      packages: {
+      camp_packages: {
         Row: {
-          id: string;
+          id: number;
+          title: string;
           slug: string;
-          name: string;
-          description?: string | null;
-          location?: string | null;
-          price_per_guest: number;
-          max_guests: number;
-          created_at: string | null;
+          description: string;
+          location: string;
+          price_per_person: number;
+          max_capacity: number;
+          is_active: boolean;
         };
         Insert: {
-          id?: string;
+          id?: number;
+          title: string;
           slug: string;
-          name: string;
-          description?: string | null;
-          location?: string | null;
-          price_per_guest: number;
-          max_guests: number;
+          description: string;
+          location: string;
+          price_per_person: number;
+          max_capacity: number;
+          is_active?: boolean;
         };
         Update: {
+          title?: string;
           slug?: string;
-          name?: string;
-          description?: string | null;
-          location?: string | null;
-          price_per_guest?: number;
-          max_guests?: number;
+          description?: string;
+          location?: string;
+          price_per_person?: number;
+          max_capacity?: number;
+          is_active?: boolean;
         };
       };
       bookings: {
         Row: {
-          id: string;
-          package_id: string;
+          id: number;
+          booking_reference: string;
           user_id: string;
-          status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+          package_id: number;
+          availability_id: number;
           guest_count: number;
-          total_price: number;
-          start_date: string;
-          end_date: string;
-          created_at: string | null;
-          updated_at: string | null;
+          total_amount: number;
+          advance_amount: number;
+          payment_status: string;
+          booking_status: string;
+          special_requests: string | null;
+          booked_for_date: string;
         };
         Insert: {
-          id?: string;
-          package_id: string;
+          id?: number;
+          booking_reference?: string;
           user_id: string;
-          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+          package_id: number;
+          availability_id: number;
           guest_count: number;
-          total_price: number;
-          start_date: string;
-          end_date: string;
+          total_amount: number;
+          advance_amount?: number;
+          payment_status?: string;
+          booking_status?: string;
+          special_requests?: string | null;
+          booked_for_date: string;
         };
         Update: {
-          package_id?: string;
+          booking_reference?: string;
           user_id?: string;
-          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+          package_id?: number;
+          availability_id?: number;
           guest_count?: number;
-          total_price?: number;
-          start_date?: string;
-          end_date?: string;
+          total_amount?: number;
+          advance_amount?: number;
+          payment_status?: string;
+          booking_status?: string;
+          special_requests?: string | null;
+          booked_for_date?: string;
+        };
+      };
+      availability: {
+        Row: {
+          package_id: number;
+          available_date: string;
+          total_slots: number;
+          booked_slots: number;
+        };
+        Insert: {
+          package_id: number;
+          available_date: string;
+          total_slots: number;
+          booked_slots?: number;
+        };
+        Update: {
+          package_id?: number;
+          available_date?: string;
+          total_slots?: number;
+          booked_slots?: number;
         };
       };
     };

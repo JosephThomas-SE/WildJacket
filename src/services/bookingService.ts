@@ -1,145 +1,121 @@
-<import { supabaseAdmin } from '@/lib/supabase/server';
+<'use server';
+
+import { supabaseBrowser } from '@/lib/supabase/client';
 import type { Database } from '@/types/supabase';
 
-export type PackageRow = Database['public']['Tables']['packages']['Row'];
+export type CampPackageRow = Database['public']['Tables']['camp_packages']['Row'];
 export type BookingRow = Database['public']['Tables']['bookings']['Row'];
 export type BookingInsert = Database['public']['Tables']['bookings']['Insert'];
+export type AvailabilityRow = Database['public']['Tables']['availability']['Row'];
 
-export type BookingWithPackage = BookingRow & {
-  packages?: Pick<PackageRow, 'id' | 'name' | 'slug'> | null;
-};
-
-export async function getPackages() {
-  const { data, error } = await supabaseAdmin
-    .from('packages')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    throw new Error(error.message || 'Unable to fetch packages');
-  }
-
-  return data as PackageRow[];
-}
-
-export async function getPackageBySlug(slug: string) {
-  const { data, error } = await supabaseAdmin
-    .from('packages')
-    .select('*')
-    .eq('slug', slug)
-    .limit(1)
-    .single();
-
-  if (error) {
-    throw new Error(error.message || 'Unable to fetch package');
-  }
-
-  return data as PackageRow;
-}
-
-export async function getBookingAvailability(packageId: string, startDate: string, endDate: string) {
-  const { data, error } = await supabaseAdmin
+/**
+ * Fetches all user bookings.
+ * Uses RLS for user isolation.
+ */
+export async function getUserBookings(userId: string): Promise<BookingRow[]> {
+  const { data, error } = await supabaseBrowser
     .from('bookings')
-    .select('guest_count')
-    .eq('package_id', packageId)
-    .in('status', ['pending', 'confirmed'])
-    .not('end_date', 'lt', startDate)
-    .not('start_date', 'gt', endDate);
-
-  if (error) {
-    throw new Error(error.message || 'Unable to fetch availability');
-  }
-
-  const reservedGuests = data?.reduce((sum, booking) => sum + (booking.guest_count ?? 0), 0) ?? 0;
-
-  return {
-    reservedGuests,
-  };
-}
-
-export async function createBooking({
-  packageId,
-  userId,
-  guestCount,
-  startDate,
-  endDate,
-}: {
-  packageId: string;
-  userId: string;
-  guestCount: number;
-  startDate: string;
-  endDate: string;
-}) {
-  const packageDetail = await getPackageBySlug(packageId);
-  if (!packageDetail) {
-    throw new Error('Package not found');
-  }
-
-  if (guestCount < 1) {
-    throw new Error('Guest count must be at least 1');
-  }
-
-  if (guestCount > packageDetail.max_guests) {
-    throw new Error(`Maximum guests for this package is ${packageDetail.max_guests}`);
-  }
-
-  const availability = await getBookingAvailability(packageDetail.id, startDate, endDate);
-  const existingGuests = availability.reservedGuests;
-  const availableSpots = packageDetail.max_guests - existingGuests;
-
-  if (guestCount > availableSpots) {
-    throw new Error('Requested guest count exceeds available capacity for selected dates');
-  }
-
-  const totalPrice = packageDetail.price_per_guest * guestCount;
-
-  const { data, error } = await supabaseAdmin
-    .from('bookings')
-    .insert({
-      package_id: packageDetail.id,
-      user_id: userId,
-      guest_count: guestCount,
-      start_date: startDate,
-      end_date: endDate,
-      total_price: totalPrice,
-      status: 'pending',
-    })
     .select('*')
-    .single();
-
-  if (error) {
-    throw new Error(error.message || 'Unable to create booking');
-  }
-
-  return data as BookingRow;
-}
-
-export async function getBookingsByUser(userId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('bookings')
-    .select('*, packages(id, name, slug)')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .order('booked_for_date', { ascending: false });
 
   if (error) {
     throw new Error(error.message || 'Unable to fetch bookings');
   }
 
-  return data as BookingWithPackage[];
-}
-
-export async function getBookingsForPackage(packageId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('bookings')
-    .select('*')
-    .eq('package_id', packageId)
-    .in('status', ['pending', 'confirmed'])
-    .order('start_date', { ascending: true });
-
-  if (error) {
-    throw new Error(error.message || 'Unable to fetch package bookings');
-  }
-
   return data as BookingRow[];
 }
+
+/**
+ * Fetches booking details by ID.
+ */
+export async function getBookingById(bookingId: number): Promise<BookingRow | null> {
+  const { data, error } = await supabaseBrowser
+    .from('bookings')
+    .select('*')
+    .eq('id', bookingId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message || 'Unable to fetch booking');
+  }
+
+  return data as BookingRow | null;
+}
+
+/**
+ * Checks availability for a specific date.
+ * Returns available slots after accounting for existing bookings.
+ */
+export async function checkDateAvailability(
+  packageId: number,
+  availableDate: string,
+): Promise<{ available_slots: number; booked_slots: number } | null> {
+  const { data, error } = await supabaseBrowser
+    .from('availability')
+    .select('*')
+    .eq('package_id', packageId)
+    .eq('available_date', availableDate)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message || 'Unable to check availability');
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    available_slots: data.total_slots - data.booked_slots,
+    booked_slots: data.booked_slots,
+  };
+}
+
+/**
+ * Validates booking parameters before creation.
+ * Returns validation result with any errors.
+ */
+export async function validateBooking(
+  packageId: number,
+  availableDate: string,
+  guestCount: number,
+): Promise<{ valid: boolean; error?: string }> {
+  if (guestCount < 1) {
+    return { valid: false, error: 'Guest count must be at least 1' };
+  }
+
+  // Check package exists and is active
+  const { data: pkg, error: pkgError } = await supabaseBrowser
+    .from('camp_packages')
+    .select('id, max_capacity')
+    .eq('id', packageId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (pkgError || !pkg) {
+    return { valid: false, error: 'Package not found or inactive' };
+  }
+
+  if (guestCount > pkg.max_capacity) {
+    return {
+      valid: false,
+      error: `Guest count exceeds package capacity of ${pkg.max_capacity}`,
+    };
+  }
+
+  // Check availability
+  const availability = await checkDateAvailability(packageId, availableDate);
+  if (!availability) {
+    return { valid: false, error: 'No availability record for this date' };
+  }
+
+  if (guestCount > availability.available_slots) {
+    return {
+      valid: false,
+      error: `Only ${availability.available_slots} slots available for this date`,
+    };
+  }
+
+  return { valid: true };
 }
