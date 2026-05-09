@@ -1,6 +1,9 @@
 'use client';
 
-import type { ErrorProps } from 'next/error';
+interface ErrorProps {
+  error: Error & { digest?: string };
+  reset: () => void;
+}
 
 export default function Error({ error }: ErrorProps) {
   return (
