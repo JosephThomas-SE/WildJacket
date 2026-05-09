@@ -5,10 +5,29 @@
 @import '../styles/theme.css';
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #020617;
+  background-color: #f0f9f4;
   text-rendering: optimizeLegibility;
+  --bg-primary: #f0f9f4;
+  --bg-secondary: #dcf2e5;
+  --text-primary: #0f3f2e;
+  --text-secondary: #176446;
+  --accent: #2aa170;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.dark {
+  color-scheme: dark;
+  background-color: #020617;
+  --bg-primary: #020617;
+  --bg-secondary: #08101f;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --accent: #4dbe8a;
+  --glass-bg: rgba(15, 23, 42, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 html {
@@ -19,8 +38,9 @@ html {
 body {
   margin: 0;
   min-height: 100%;
-  background: radial-gradient(circle at top, rgba(56, 189, 248, 0.08), transparent 30%), #020617;
-  color: #e2e8f0;
+  background: radial-gradient(circle at top, rgba(42, 161, 112, 0.08), transparent 30%), var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
@@ -32,4 +52,82 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.2);
+  border-radius: 12px;
+}
+
+/* Luxury gradients */
+.luxury-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.eco-gradient {
+  background: linear-gradient(135deg, #2aa170 0%, #4dbe8a 50%, #7dd3a8 100%);
+}
+
+/* Micro-interactions */
+.btn-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(42, 161, 112, 0.3);
+}
+
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.4);
+}
+
+/* Typography system */
+.text-luxury {
+  font-family: var(--font-serif);
+  letter-spacing: 0.05em;
+}
+
+.text-eco {
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

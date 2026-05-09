@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/utils/clsx';
+import { AuthNavbar } from '@/components/navbar/AuthNavbar';
+import { Footer } from '../ui/Footer';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -8,11 +10,15 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, className }: MainLayoutProps) {
   return (
-    <main className={cn('min-h-screen bg-slate-950 text-slate-100', className)}>
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-slate-900 to-transparent opacity-80" />
-        {children}
-      </div>
-    </main>
+    <div className="min-h-screen flex flex-col">
+      <AuthNavbar />
+      <main className={cn('flex-1', className)}>
+        <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-forest-100 to-transparent opacity-80 dark:from-forest-900" />
+          {children}
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 }
