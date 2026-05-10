@@ -1,4 +1,4 @@
-import { createMiddlewareSupabaseClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import type { Database } from '@/types/supabase';
@@ -9,8 +9,8 @@ import { hasRole } from '@/lib/permissions';
 const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
 const supabaseAnonKey = getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 
-export function createSupabaseMiddlewareClient(req: NextRequest, res: NextResponse) {
-  return createMiddlewareSupabaseClient<Database>({
+export function createServerClient(req: NextRequest, res: NextResponse) {
+  return createServerClient<Database>({
     req,
     res,
     supabaseUrl,
@@ -19,7 +19,7 @@ export function createSupabaseMiddlewareClient(req: NextRequest, res: NextRespon
 }
 
 export async function protectRoute(req: NextRequest, res: NextResponse, redirectTo = '/login') {
-  const supabase = createSupabaseMiddlewareClient(req, res);
+  const supabase = createServerClient(req, res);
   const { data } = await supabase.auth.getSession();
 
   if (!data.session) {
