@@ -7,7 +7,7 @@ import type { Role } from '@/lib/roles';
 import { ADMIN_ROLES, SUPER_ADMIN_ROLES, getRoleFromSession } from '@/lib/roles';
 import { requireRole as enforceRole } from '@/lib/permissions';
 
-const supabaseUrl = getRequiredEnv('SUPABASE_URL');
+const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
 const serviceRoleKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
 
 export const supabaseAdmin = createClient<Database>(supabaseUrl, serviceRoleKey, {
