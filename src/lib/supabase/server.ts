@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createServerComponentClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 import { getRequiredEnv } from '@/lib/env';
@@ -17,7 +17,7 @@ export const supabaseAdmin = createClient<Database>(supabaseUrl, serviceRoleKey,
 });
 
 export function createSupabaseServerClient() {
-  return createServerComponentClient<Database>({ cookies });
+  return createServerClient<Database>({ cookies });
 }
 
 export async function getSession() {
