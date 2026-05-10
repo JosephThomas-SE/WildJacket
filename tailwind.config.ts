@@ -95,9 +95,3 @@ const config: Config = {
 };
 
 export default config;
-    },
-  },
-  plugins: [],
-};
-
-export default config;
