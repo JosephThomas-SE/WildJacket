@@ -1,6 +1,6 @@
-<'use server';
+'use server';
 
-import { supabaseBrowser } from '@/lib/supabase/client';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/supabase';
 
 export type CampPackageRow = Database['public']['Tables']['camp_packages']['Row'];
@@ -8,12 +8,17 @@ export type BookingRow = Database['public']['Tables']['bookings']['Row'];
 export type BookingInsert = Database['public']['Tables']['bookings']['Insert'];
 export type AvailabilityRow = Database['public']['Tables']['availability']['Row'];
 
+function getServerSupabase() {
+  return createSupabaseServerClient();
+}
+
 /**
  * Fetches all user bookings.
  * Uses RLS for user isolation.
  */
 export async function getUserBookings(userId: string): Promise<BookingRow[]> {
-  const { data, error } = await supabaseBrowser
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
     .from('bookings')
     .select('*')
     .eq('user_id', userId)
@@ -30,7 +35,8 @@ export async function getUserBookings(userId: string): Promise<BookingRow[]> {
  * Fetches booking details by ID.
  */
 export async function getBookingById(bookingId: number): Promise<BookingRow | null> {
-  const { data, error } = await supabaseBrowser
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
     .from('bookings')
     .select('*')
     .eq('id', bookingId)
@@ -51,7 +57,8 @@ export async function checkDateAvailability(
   packageId: number,
   availableDate: string,
 ): Promise<{ available_slots: number; booked_slots: number } | null> {
-  const { data, error } = await supabaseBrowser
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
     .from('availability')
     .select('*')
     .eq('package_id', packageId)
@@ -86,7 +93,8 @@ export async function validateBooking(
   }
 
   // Check package exists and is active
-  const { data: pkg, error: pkgError } = await supabaseBrowser
+  const supabase = getServerSupabase();
+  const { data: pkg, error: pkgError } = await supabase
     .from('camp_packages')
     .select('id, max_capacity')
     .eq('id', packageId)
