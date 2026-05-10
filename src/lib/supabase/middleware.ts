@@ -1,4 +1,4 @@
-import { createMiddlewareSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { createMiddlewareSupabaseClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import type { Database } from '@/types/supabase';

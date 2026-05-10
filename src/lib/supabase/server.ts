@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerComponentClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 import { getRequiredEnv } from '@/lib/env';
