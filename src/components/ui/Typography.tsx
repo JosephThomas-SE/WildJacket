@@ -1,4 +1,4 @@
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'lead' | 'caption' | 'luxury';
@@ -15,7 +15,7 @@ const Typography = ({
 }: TypographyProps) => {
   return (
     <Component
-      className={clsx(
+      className={cn(
         {
           'text-4xl font-bold tracking-tight text-luxury lg:text-5xl': variant === 'h1',
           'text-3xl font-semibold tracking-tight text-luxury': variant === 'h2',

@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface SectionLayoutProps extends React.HTMLAttributes<HTMLElement> {
   variant?: 'default' | 'hero' | 'feature' | 'cta';
@@ -11,7 +11,7 @@ const SectionLayout = forwardRef<HTMLElement, SectionLayoutProps>(
   ({ className, variant = 'default', container = true, children, ...props }, ref) => {
     return (
       <section
-        className={clsx(
+        className={cn(
           'py-16 lg:py-24',
           {
             // Variants

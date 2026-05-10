@@ -41,7 +41,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
         <div
           ref={ref}
-          className={clsx(
+          className={cn(
             'w-full glass-card animate-scale-in',
             sizeClasses[size],
             className
