@@ -1,41 +1,84 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+
 import type { Database } from '@/types/supabase';
-import { getRequiredEnv } from '@/lib/env';
 import type { Role } from '@/lib/roles';
-import { ADMIN_ROLES, SUPER_ADMIN_ROLES, getRoleFromSession } from '@/lib/roles';
+
+import {
+  ADMIN_ROLES,
+  SUPER_ADMIN_ROLES,
+  getRoleFromSession,
+} from '@/lib/roles';
+
 import { requireRole as enforceRole } from '@/lib/permissions';
 
-const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
-const serviceRoleKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabaseAdmin = createClient<Database>(supabaseUrl, serviceRoleKey, {
-  auth: {
-    persistSession: false,
-  },
-});
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-export function createSupabaseServerClient() {
-  return createServerClient<Database>({ cookies });
+export const supabaseAdmin = createClient<Database>(
+  supabaseUrl,
+  serviceRoleKey,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+);
+
+export async function createSupabaseServerClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient<Database>(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(
+              ({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+            );
+          } catch {}
+        },
+      },
+    }
+  );
 }
 
 export async function getSession() {
-  return createSupabaseServerClient().auth.getSession();
+  const supabase = await createSupabaseServerClient();
+
+  return supabase.auth.getSession();
 }
 
 export async function requireUser() {
-  const { data } = await getSession();
+  const {
+    data: { session },
+  } = await getSession();
 
-  if (!data.session) {
+  if (!session) {
     throw new Error('Authentication required');
   }
 
-  return data.session;
+  return session;
 }
 
-export async function requireRole(allowedRoles: Role | Role[]) {
+export async function requireRole(
+  allowedRoles: Role | Role[]
+) {
   const session = await requireUser();
+
   const role = getRoleFromSession(session);
 
   enforceRole(role, allowedRoles);
@@ -44,9 +87,9 @@ export async function requireRole(allowedRoles: Role | Role[]) {
 }
 
 export async function requireAdmin() {
-  await requireRole(ADMIN_ROLES);
+  return requireRole(ADMIN_ROLES);
 }
 
 export async function requireSuperAdmin() {
-  await requireRole(SUPER_ADMIN_ROLES);
+  return requireRole(SUPER_ADMIN_ROLES);
 }
