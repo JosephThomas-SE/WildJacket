@@ -1,51 +1,92 @@
 import { createServerClient } from '@supabase/ssr';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import type { Database } from '@/types/supabase';
-import { getRequiredEnv } from '@/lib/env';
-import { getRoleFromSession } from '@/lib/roles';
-import { hasRole } from '@/lib/permissions';
+import { NextResponse, type NextRequest } from 'next/server';
 
-const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
-const supabaseAnonKey = getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+const protectedRoutes = ['/dashboard', '/profile', '/bookings'];
+const adminRoutes = ['/admin'];
 
-export function createServerClient(req: NextRequest, res: NextResponse) {
-  return createServerClient<Database>({
-    req,
-    res,
-    supabaseUrl,
-    supabaseKey: supabaseAnonKey,
+export async function middleware(req: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
   });
-}
 
-export async function protectRoute(req: NextRequest, res: NextResponse, redirectTo = '/login') {
-  const supabase = createServerClient(req, res);
-  const { data } = await supabase.auth.getSession();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
 
-  if (!data.session) {
-    return NextResponse.redirect(new URL(redirectTo, req.url));
+        set(name: string, value: string, options: any) {
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+
+        remove(name: string, options: any) {
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+        },
+      },
+    }
+  );
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const pathname = req.nextUrl.pathname;
+
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  const isAdminRoute = adminRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  // Require login
+  if (isProtectedRoute && !session) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  return { supabase, session: data.session };
-}
+  // Admin protection
+  if (isAdminRoute) {
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
 
-export async function protectRouteWithRole(
-  req: NextRequest,
-  res: NextResponse,
-  allowedRoles: string[] | string,
-  redirectTo = '/unauthorized',
-) {
-  const result = await protectRoute(req, res);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
 
-  if (result instanceof NextResponse) {
-    return result;
+    const role = profile?.role;
+
+    if (role !== 'admin' && role !== 'super_admin') {
+      return NextResponse.redirect(
+        new URL('/unauthorized', req.url)
+      );
+    }
   }
 
-  const role = getRoleFromSession(result.session);
-
-  if (!hasRole(role, allowedRoles)) {
-    return NextResponse.redirect(new URL(redirectTo, req.url));
-  }
-
-  return result;
+  return response;
 }
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/bookings/:path*',
+    '/admin/:path*',
+  ],
+};
