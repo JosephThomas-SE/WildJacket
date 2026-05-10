@@ -1,25 +1,32 @@
 'use server';
 
-import { createServerActionClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import type { Database } from '@/types/supabase';
-import { forgotPasswordSchema, loginSchema, signupSchema } from '@/lib/validators/auth';
+import {
+  signupSchema,
+  loginSchema,
+  forgotPasswordSchema,
+} from '@/lib/validators/auth';
 
-function getActionClient() {
-  return createServerActionClient<Database>({ cookies });
-}
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function signupAction(formData: FormData) {
   const formValues = Object.fromEntries(formData.entries());
-  const { fullName, email, password } = signupSchema.parse(formValues);
 
-  const supabase = getActionClient();
+  const { fullName, email, password } =
+    signupSchema.parse(formValues);
+
+  const supabase =
+    await createSupabaseServerClient();
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
+
     options: {
-      data: { full_name: fullName },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/login`,
+      data: {
+        full_name: fullName,
+      },
+
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/login`,
     },
   });
 
@@ -27,35 +34,65 @@ export async function signupAction(formData: FormData) {
     throw new Error(error.message);
   }
 
-  return 'Check your inbox for a confirmation email.';
+  return {
+    success: true,
+    message:
+      'Check your inbox for a confirmation email.',
+  };
 }
 
 export async function loginAction(formData: FormData) {
   const formValues = Object.fromEntries(formData.entries());
-  const { email, password } = loginSchema.parse(formValues);
 
-  const supabase = getActionClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { email, password } =
+    loginSchema.parse(formValues);
+
+  const supabase =
+    await createSupabaseServerClient();
+
+  const { error } =
+    await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return 'Login successful';
+  return {
+    success: true,
+    message: 'Login successful',
+  };
 }
 
-export async function forgotPasswordAction(formData: FormData) {
-  const formValues = Object.fromEntries(formData.entries());
-  const { email } = forgotPasswordSchema.parse(formValues);
-  const supabase = getActionClient();
+export async function forgotPasswordAction(
+  formData: FormData
+) {
+  const formValues =
+    Object.fromEntries(formData.entries());
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/reset-password`,
-  });
+  const { email } =
+    forgotPasswordSchema.parse(formValues);
+
+  const supabase =
+    await createSupabaseServerClient();
+
+  const { error } =
+    await supabase.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+      }
+    );
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return 'Password reset email sent. Check your inbox.';
+  return {
+    success: true,
+    message:
+      'Password reset email sent. Check your inbox.',
+  };
 }
