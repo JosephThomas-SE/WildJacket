@@ -1,4 +1,4 @@
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface LoaderProps {
   size?: 'sm' | 'md' | 'lg';
@@ -16,7 +16,7 @@ const Loader = ({ size = 'md', variant = 'spinner', className }: LoaderProps) =>
   if (variant === 'spinner') {
     return (
       <svg
-        className={clsx('animate-spin text-forest-500', sizeClasses[size], className)}
+        className={cn('animate-spin text-forest-500', sizeClasses[size], className)}
         fill="none"
         viewBox="0 0 24 24"
       >
@@ -39,17 +39,17 @@ const Loader = ({ size = 'md', variant = 'spinner', className }: LoaderProps) =>
 
   if (variant === 'dots') {
     return (
-      <div className={clsx('flex space-x-1', className)}>
-        <div className={clsx('bg-forest-500 rounded-full animate-bounce', sizeClasses[size])} />
-        <div className={clsx('bg-forest-500 rounded-full animate-bounce [animation-delay:0.1s]', sizeClasses[size])} />
-        <div className={clsx('bg-forest-500 rounded-full animate-bounce [animation-delay:0.2s]', sizeClasses[size])} />
+      <div className={cn('flex space-x-1', className)}>
+        <div className={cn('bg-forest-500 rounded-full animate-bounce', sizeClasses[size])} />
+        <div className={cn('bg-forest-500 rounded-full animate-bounce [animation-delay:0.1s]', sizeClasses[size])} />
+        <div className={cn('bg-forest-500 rounded-full animate-bounce [animation-delay:0.2s]', sizeClasses[size])} />
       </div>
     );
   }
 
   if (variant === 'pulse') {
     return (
-      <div className={clsx('bg-forest-500 rounded-full animate-pulse', sizeClasses[size], className)} />
+      <div className={cn('bg-forest-500 rounded-full animate-pulse', sizeClasses[size], className)} />
     );
   }
 

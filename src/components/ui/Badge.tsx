@@ -1,4 +1,4 @@
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'success' | 'warning' | 'error' | 'luxury';
@@ -8,7 +8,7 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 const Badge = ({ className, variant = 'default', size = 'md', children, ...props }: BadgeProps) => {
   return (
     <span
-      className={clsx(
+      className={cn(
         'inline-flex items-center rounded-full font-medium',
         {
           // Variants

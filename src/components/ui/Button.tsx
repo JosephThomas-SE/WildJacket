@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'glass' | 'luxury';
@@ -11,7 +11,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, ...props }, ref) => {
     return (
       <button
-        className={clsx(
+        className={cn(
           'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed btn-hover',
           {
             // Variants

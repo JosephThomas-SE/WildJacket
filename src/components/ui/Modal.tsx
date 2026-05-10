@@ -1,5 +1,5 @@
 import { forwardRef, useEffect } from 'react';
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface ModalProps {
   isOpen: boolean;

@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'glass' | 'elevated';
@@ -10,7 +10,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', padding = 'md', children, ...props }, ref) => {
     return (
       <div
-        className={clsx(
+        className={cn(
           'rounded-xl transition-all duration-300 card-hover',
           {
             // Variants

@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { clsx } from '../../utils/clsx';
+import { cn } from '../../utils/clsx';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: 'default' | 'glass';
@@ -10,7 +10,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, variant = 'default', error, ...props }, ref) => {
     return (
       <input
-        className={clsx(
+        className={cn(
           'w-full rounded-lg border px-3 py-2 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
           {
             // Variants
