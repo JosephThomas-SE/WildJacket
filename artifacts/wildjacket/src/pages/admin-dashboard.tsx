@@ -94,6 +94,15 @@ create policy "Users update own reviews"
   to authenticated
   using (auth.uid() = user_id);
 
+-- Admins can read and delete all reviews
+create policy "Admins read all reviews"
+  on reviews for select
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') in ('admin','super_admin'));
+
+create policy "Admins delete reviews"
+  on reviews for delete
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') in ('admin','super_admin'));
+
 -- 4. Set a user's role (run per user, replace the placeholders)
 -- update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' where email = 'admin@example.com';
 -- update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"super_admin"}' where email = 'superadmin@example.com';`;

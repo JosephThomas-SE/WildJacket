@@ -44,6 +44,40 @@ export async function fetchRatingsForExperiences(): Promise<ExperienceRating[]> 
   }));
 }
 
+export interface AdminReview {
+  id: string;
+  user_id: string;
+  booking_id: string;
+  experience_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  booking_ref: string;
+  experience_title: string;
+  experience_emoji: string;
+}
+
+export async function fetchAllReviews(): Promise<AdminReview[]> {
+  const { data, error } = await supabaseBrowser
+    .from("reviews")
+    .select("*, bookings(booking_ref, experience_title, experience_emoji)")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as (Review & { bookings: { booking_ref: string; experience_title: string; experience_emoji: string } })[]).map(
+    (r) => ({
+      ...r,
+      booking_ref: r.bookings?.booking_ref ?? "—",
+      experience_title: r.bookings?.experience_title ?? "—",
+      experience_emoji: r.bookings?.experience_emoji ?? "🌿",
+    }),
+  );
+}
+
+export async function deleteReview(id: string): Promise<void> {
+  const { error } = await supabaseBrowser.from("reviews").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export async function submitReview(
   userId: string,
   bookingId: string,

@@ -6,6 +6,7 @@ import { getRoleFromSession } from "@/lib/roles";
 import { notifyBooking } from "@/lib/api";
 import { useRealtimeBookings, type RealtimeEvent } from "@/hooks/useRealtimeBookings";
 import BookingAnalyticsChart from "@/components/BookingAnalyticsChart";
+import AdminReviewsPanel from "@/components/AdminReviewsPanel";
 import toast from "react-hot-toast";
 
 function StatusBadge({ status }: { status: Booking["status"] }) {
@@ -255,6 +256,9 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+        {/* Reviews panel */}
+        {!loading && !error && <AdminReviewsPanel />}
+
       </div>
     </div>
   );
