@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "WildJacket"
+version = "1.0.0"
+id = "artifacts/wildjacket"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21597
+
+[services.development]
+run = "pnpm --filter @workspace/wildjacket run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wildjacket", "run", "build" ]
+publicDir = "artifacts/wildjacket/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21597"
+BASE_PATH = "/"
