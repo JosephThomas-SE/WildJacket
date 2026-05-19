@@ -5,6 +5,7 @@ import { adminUpdateBooking, type Booking } from "@/lib/bookings";
 import { getRoleFromSession } from "@/lib/roles";
 import { notifyBooking } from "@/lib/api";
 import { useRealtimeBookings, type RealtimeEvent } from "@/hooks/useRealtimeBookings";
+import BookingAnalyticsChart from "@/components/BookingAnalyticsChart";
 import toast from "react-hot-toast";
 
 function StatusBadge({ status }: { status: Booking["status"] }) {
@@ -160,6 +161,9 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+
+        {/* Analytics chart */}
+        {!loading && !error && <BookingAnalyticsChart bookings={bookings} />}
 
         {/* Bookings table */}
         <div className="rounded-2xl border border-white/10 bg-slate-900/80 overflow-hidden">
