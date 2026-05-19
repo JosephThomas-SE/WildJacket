@@ -1,8 +1,21 @@
-import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 import { Link } from "wouter";
+import { useAuth } from "@/context/AuthContext";
+import { useBookings } from "@/hooks/useBookings";
+import { BookingModal } from "@/components/BookingModal";
+import { EXPERIENCES, type Experience } from "@/lib/bookings";
+import toast from "react-hot-toast";
 
 export default function BookingsPage() {
   const { user } = useAuth();
+  const { book } = useBookings();
+  const [selected, setSelected] = useState<Experience | null>(null);
+
+  async function handleConfirm(guests: number, travelDate: string) {
+    if (!selected) return;
+    await book(selected, guests, travelDate);
+    toast.success(`${selected.title} booked! Check your dashboard.`);
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -18,8 +31,11 @@ export default function BookingsPage() {
             key={exp.id}
             className="rounded-2xl bg-[#1e2535] text-white overflow-hidden shadow-lg flex flex-col"
           >
-            <div className="h-40 bg-gradient-to-br from-[#176446] to-[#0f3f2e] flex items-center justify-center text-5xl">
-              {exp.emoji}
+            <div className="h-40 bg-gradient-to-br from-[#176446] to-[#0f3f2e] flex flex-col items-center justify-center gap-1">
+              <span className="text-5xl">{exp.emoji}</span>
+              <span className="text-xs text-green-300 uppercase tracking-wider font-medium">
+                {exp.location} · {exp.duration}
+              </span>
             </div>
             <div className="p-5 flex flex-col flex-1">
               <h2 className="text-lg font-semibold mb-1">{exp.title}</h2>
@@ -27,12 +43,12 @@ export default function BookingsPage() {
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-[#2aa170] font-semibold">{exp.price}</span>
                 {user ? (
-                  <Link
-                    to="/dashboard"
+                  <button
+                    onClick={() => setSelected(exp)}
                     className="px-4 py-2 bg-[#2aa170] hover:bg-[#176446] text-white text-sm rounded-xl transition-colors"
                   >
                     Book now
-                  </Link>
+                  </button>
                 ) : (
                   <Link
                     to="/login"
@@ -46,41 +62,14 @@ export default function BookingsPage() {
           </div>
         ))}
       </div>
+
+      {selected && (
+        <BookingModal
+          experience={selected}
+          onConfirm={handleConfirm}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }
-
-const EXPERIENCES = [
-  {
-    id: 1,
-    emoji: "🦁",
-    title: "Serengeti Safari",
-    description:
-      "Witness the great migration and track the Big Five across Tanzania's iconic plains with expert naturalist guides.",
-    price: "From $3,200 / person",
-  },
-  {
-    id: 2,
-    emoji: "🐋",
-    title: "Baja Whale Watching",
-    description:
-      "Kayak alongside grey whales in their natural calving lagoons off the coast of Baja California Sur.",
-    price: "From $1,800 / person",
-  },
-  {
-    id: 3,
-    emoji: "🦜",
-    title: "Amazon Rainforest Trek",
-    description:
-      "Explore canopy trails, spot rare macaws, and sleep in a sustainable lodge deep in the Peruvian Amazon.",
-    price: "From $2,400 / person",
-  },
-  {
-    id: 4,
-    emoji: "🐧",
-    title: "Antarctic Expedition",
-    description:
-      "Journey to the edge of the world and walk among penguin colonies on one of Earth's last wild frontiers.",
-    price: "From $8,500 / person",
-  },
-];
