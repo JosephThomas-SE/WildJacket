@@ -13,6 +13,7 @@ import ResetPasswordPage from "@/pages/reset-password";
 import DashboardPage from "@/pages/dashboard";
 import AdminPage from "@/pages/admin";
 import AdminDashboardPage from "@/pages/admin-dashboard";
+import BookingDetailPage from "@/pages/booking-detail";
 import UnauthorizedPage from "@/pages/unauthorized";
 import NotFoundPage from "@/pages/not-found";
 import BookingsPage from "@/pages/bookings";
@@ -36,6 +37,15 @@ function AdminRoute({ component: Component }: { component: React.ComponentType }
   return <Component />;
 }
 
+function SuperAdminRoute({ component: Component }: { component: React.ComponentType }) {
+  const { session, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><span className="text-slate-300">Loading...</span></div>;
+  if (!session) return <Redirect to="/login" />;
+  const role = getRoleFromSession(session);
+  if (role !== "super_admin") return <Redirect to="/unauthorized" />;
+  return <Component />;
+}
+
 function Router() {
   return (
     <Switch>
@@ -44,16 +54,19 @@ function Router() {
       <Route path="/signup" component={SignupPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
+      <Route path="/bookings" component={BookingsPage} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={DashboardPage} />}
       </Route>
       <Route path="/admin">
         {() => <AdminRoute component={AdminPage} />}
       </Route>
-      <Route path="/admin/dashboard">
-        {() => <AdminRoute component={AdminDashboardPage} />}
+      <Route path="/admin/booking/:ref">
+        {() => <AdminRoute component={BookingDetailPage} />}
       </Route>
-      <Route path="/bookings" component={BookingsPage} />
+      <Route path="/admin/dashboard">
+        {() => <SuperAdminRoute component={AdminDashboardPage} />}
+      </Route>
       <Route path="/unauthorized" component={UnauthorizedPage} />
       <Route component={NotFoundPage} />
     </Switch>
