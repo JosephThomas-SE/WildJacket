@@ -7,7 +7,7 @@ export default function HomePage() {
         <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-8 shadow-soft backdrop-blur-xl">
           <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">WildJacket</h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
-            A scalable Next.js architecture built for production with Tailwind CSS, Supabase, and App Router conventions.
+            Discover and book premium wildlife and nature experiences in the world's most breathtaking wild places.
           </p>
         </div>
       </section>
