@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
-import "@/app/globals.css";
+import "@/index.css";
 
 import HomePage from "@/pages/home";
 import LoginPage from "@/pages/login";
@@ -15,6 +15,7 @@ import AdminPage from "@/pages/admin";
 import AdminDashboardPage from "@/pages/admin-dashboard";
 import UnauthorizedPage from "@/pages/unauthorized";
 import NotFoundPage from "@/pages/not-found";
+import BookingsPage from "@/pages/bookings";
 import { getRoleFromSession } from "@/lib/roles";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/admin/dashboard">
         {() => <AdminRoute component={AdminDashboardPage} />}
       </Route>
+      <Route path="/bookings" component={BookingsPage} />
       <Route path="/unauthorized" component={UnauthorizedPage} />
       <Route component={NotFoundPage} />
     </Switch>
