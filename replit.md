@@ -1,36 +1,48 @@
-# [Project name]
+# WildJacket
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An eco-tourism platform where users can browse, book, and manage premium wildlife and nature experiences, with Supabase-powered authentication and an admin dashboard.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/wildjacket run dev` — run the WildJacket frontend (Vite + React)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required secrets: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: Vite + React, Tailwind CSS v4, wouter (client-side routing)
+- Auth: Supabase (`@supabase/ssr`, `@supabase/supabase-js`)
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Build: esbuild (CJS bundle for API server)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/wildjacket/src/` — all frontend source code
+- `artifacts/wildjacket/src/app/` — original Next.js page components (migrated)
+- `artifacts/wildjacket/src/pages/` — Vite/React page wrappers for wouter routing
+- `artifacts/wildjacket/src/context/AuthContext.tsx` — Supabase auth context/provider
+- `artifacts/wildjacket/src/lib/supabase/client.ts` — Supabase browser client
+- `artifacts/wildjacket/src/App.tsx` — wouter router with ProtectedRoute/AdminRoute guards
+- `artifacts/wildjacket/src/index.css` — Tailwind v4 theme with custom eco-tourism tokens
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Migrated from Next.js (Vercel) to Vite + React in Replit pnpm workspace
+- `next/link` and `useRouter` replaced with wouter `Link` and `useLocation`
+- Next.js server actions converted to direct Supabase browser client calls
+- Server-only files (middleware, server auth helpers) stubbed with `export {}` since SSR is not used
+- Supabase env vars renamed from `NEXT_PUBLIC_SUPABASE_*` to `VITE_SUPABASE_*`
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Home page with WildJacket branding and eco-tourism hero
+- User auth: sign up, log in, forgot/reset password (via Supabase)
+- Protected dashboard for authenticated users
+- Admin dashboard behind role-based route guard
+- Unauthorized and 404 pages
 
 ## User preferences
 
@@ -38,7 +50,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Vite bakes env vars at startup — after changing secrets, always restart the `artifacts/wildjacket: web` workflow
+- `VITE_SUPABASE_URL` must be the project URL (starts with `https://`); `VITE_SUPABASE_ANON_KEY` is the long `eyJ…` anon key
 
 ## Pointers
 
