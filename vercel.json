@@ -1,0 +1,12 @@
+{
+  "buildCommand": "pnpm --filter @workspace/wildjacket run build",
+  "outputDirectory": "artifacts/wildjacket/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "env": {
+    "BASE_PATH": "/"
+  }
+}
