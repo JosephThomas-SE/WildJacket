@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useBookings } from "@/hooks/useBookings";
 import { PageShell } from "@/components/layout/PageShell";
 import { EditBookingModal, RequirementsModal } from "@/components/EditBookingModal";
+import { ReviewModal } from "@/components/ReviewModal";
 import {
   type Booking,
   canEditBooking,
   canCancelOrAddRequirements,
   daysUntilTravel,
 } from "@/lib/bookings";
+import {
+  fetchUserReviews,
+  submitReview,
+  type Review,
+} from "@/lib/reviews";
 import toast from "react-hot-toast";
 
 function StatusBadge({ status }: { status: Booking["status"] }) {
@@ -26,11 +32,37 @@ function TimeWarning({ booking }: { booking: Booking }) {
   return null;
 }
 
+function StarDisplay({ rating }: { rating: number }) {
+  return (
+    <span className="inline-flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((v) => (
+        <span key={v} className={`text-sm ${v <= rating ? "text-amber-400" : "text-slate-700"}`}>★</span>
+      ))}
+    </span>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { bookings, loading, error, edit, addRequirements, cancel } = useBookings();
   const [editTarget, setEditTarget] = useState<Booking | null>(null);
   const [reqTarget, setReqTarget] = useState<Booking | null>(null);
+  const [reviewTarget, setReviewTarget] = useState<Booking | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserReviews(user.id).then(setReviews).catch(() => {});
+    }
+  }, [user]);
+
+  function reviewForBooking(b: Booking): Review | undefined {
+    return reviews.find((r) => r.booking_id === b.id);
+  }
+
+  function isCompleted(b: Booking): boolean {
+    return b.status === "confirmed" && daysUntilTravel(b.travel_date) < 0;
+  }
 
   async function handleCancel(b: Booking) {
     if (!confirm(`Cancel your booking for ${b.experience_title}?`)) return;
@@ -40,6 +72,22 @@ export default function DashboardPage() {
     } catch {
       toast.error("Failed to cancel — please try again");
     }
+  }
+
+  async function handleReviewSave(rating: number, comment: string) {
+    if (!user || !reviewTarget) return;
+    const saved = await submitReview(
+      user.id,
+      reviewTarget.id,
+      reviewTarget.experience_id,
+      rating,
+      comment,
+    );
+    setReviews((prev) => {
+      const without = prev.filter((r) => r.booking_id !== reviewTarget.id);
+      return [...without, saved];
+    });
+    toast.success("Review saved!");
   }
 
   return (
@@ -80,58 +128,89 @@ export default function DashboardPage() {
 
           {!loading && bookings.length > 0 && (
             <div className="space-y-4">
-              {bookings.map((b) => (
-                <div key={b.id} className="rounded-xl bg-white/5 border border-white/10 px-5 py-4">
-                  <div className="flex items-start gap-4">
-                    <span className="text-3xl mt-0.5">{b.experience_emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <p className="font-semibold text-white text-sm">{b.experience_title}</p>
-                        <StatusBadge status={b.status} />
-                      </div>
-                      <p className="text-slate-400 text-xs">
-                        {new Date(b.travel_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-                        {" · "}{b.guests} guest{b.guests !== 1 ? "s" : ""}
-                        {" · "}<span className="text-[#2aa170]">${b.total_price.toLocaleString()}</span>
-                        {" · "}<span className="text-slate-500">Ref: {b.booking_ref}</span>
-                      </p>
-                      {b.additional_requirements && (
-                        <p className="text-slate-500 text-xs mt-1 italic">"{b.additional_requirements}"</p>
-                      )}
-                      <TimeWarning booking={b} />
-                    </div>
-                  </div>
+              {bookings.map((b) => {
+                const completed = isCompleted(b);
+                const existing = reviewForBooking(b);
 
-                  {b.status === "confirmed" && (
-                    <div className="flex flex-wrap gap-2 mt-3 ml-11">
-                      {canEditBooking(b) && (
-                        <button
-                          onClick={() => setEditTarget(b)}
-                          className="text-xs text-slate-300 hover:text-white border border-white/10 hover:border-white/30 rounded-lg px-3 py-1.5 transition-colors"
-                        >
-                          Edit date / guests
-                        </button>
-                      )}
-                      {canCancelOrAddRequirements(b) && (
-                        <button
-                          onClick={() => setReqTarget(b)}
-                          className="text-xs text-slate-300 hover:text-white border border-white/10 hover:border-white/30 rounded-lg px-3 py-1.5 transition-colors"
-                        >
-                          {b.additional_requirements ? "Update requirements" : "Add requirements"}
-                        </button>
-                      )}
-                      {canCancelOrAddRequirements(b) && (
-                        <button
-                          onClick={() => handleCancel(b)}
-                          className="text-xs text-slate-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 rounded-lg px-3 py-1.5 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                return (
+                  <div key={b.id} className="rounded-xl bg-white/5 border border-white/10 px-5 py-4">
+                    <div className="flex items-start gap-4">
+                      <span className="text-3xl mt-0.5">{b.experience_emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <p className="font-semibold text-white text-sm">{b.experience_title}</p>
+                          <StatusBadge status={b.status} />
+                          {completed && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-700/60 text-slate-400 border border-slate-600/30">
+                              Completed
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-slate-400 text-xs">
+                          {new Date(b.travel_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                          {" · "}{b.guests} guest{b.guests !== 1 ? "s" : ""}
+                          {" · "}<span className="text-[#2aa170]">${b.total_price.toLocaleString()}</span>
+                          {" · "}<span className="text-slate-500">Ref: {b.booking_ref}</span>
+                        </p>
+                        {b.additional_requirements && (
+                          <p className="text-slate-500 text-xs mt-1 italic">"{b.additional_requirements}"</p>
+                        )}
+                        {existing && (
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <StarDisplay rating={existing.rating} />
+                            {existing.comment && (
+                              <span className="text-slate-500 text-xs italic">"{existing.comment}"</span>
+                            )}
+                          </div>
+                        )}
+                        <TimeWarning booking={b} />
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {/* Actions for upcoming confirmed bookings */}
+                    {b.status === "confirmed" && !completed && (
+                      <div className="flex flex-wrap gap-2 mt-3 ml-11">
+                        {canEditBooking(b) && (
+                          <button
+                            onClick={() => setEditTarget(b)}
+                            className="text-xs text-slate-300 hover:text-white border border-white/10 hover:border-white/30 rounded-lg px-3 py-1.5 transition-colors"
+                          >
+                            Edit date / guests
+                          </button>
+                        )}
+                        {canCancelOrAddRequirements(b) && (
+                          <button
+                            onClick={() => setReqTarget(b)}
+                            className="text-xs text-slate-300 hover:text-white border border-white/10 hover:border-white/30 rounded-lg px-3 py-1.5 transition-colors"
+                          >
+                            {b.additional_requirements ? "Update requirements" : "Add requirements"}
+                          </button>
+                        )}
+                        {canCancelOrAddRequirements(b) && (
+                          <button
+                            onClick={() => handleCancel(b)}
+                            className="text-xs text-slate-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 rounded-lg px-3 py-1.5 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Review action for completed bookings */}
+                    {completed && (
+                      <div className="mt-3 ml-11">
+                        <button
+                          onClick={() => setReviewTarget(b)}
+                          className="text-xs text-amber-400 hover:text-amber-300 border border-amber-500/30 hover:border-amber-400/50 rounded-lg px-3 py-1.5 transition-colors"
+                        >
+                          {existing ? "✏ Edit your review" : "★ Rate your trip"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -149,6 +228,15 @@ export default function DashboardPage() {
           booking={reqTarget}
           onSave={(req) => addRequirements(reqTarget.id, req)}
           onClose={() => setReqTarget(null)}
+        />
+      )}
+      {reviewTarget && (
+        <ReviewModal
+          booking={reviewTarget}
+          existingRating={reviewForBooking(reviewTarget)?.rating}
+          existingComment={reviewForBooking(reviewTarget)?.comment ?? undefined}
+          onSave={handleReviewSave}
+          onClose={() => setReviewTarget(null)}
         />
       )}
     </PageShell>

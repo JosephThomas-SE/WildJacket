@@ -63,7 +63,38 @@ create policy "Users read own profile"
   on profiles for select
   using (auth.uid() = user_id);
 
--- 3. Set a user's role (run per user, replace the placeholders)
+-- 3. reviews table
+create table if not exists reviews (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid not null references auth.users(id) on delete cascade,
+  booking_id     uuid not null references bookings(id) on delete cascade,
+  experience_id  integer not null,
+  rating         integer not null check (rating between 1 and 5),
+  comment        text,
+  created_at     timestamptz not null default now(),
+  constraint reviews_booking_id_key unique (booking_id)
+);
+
+alter table reviews enable row level security;
+
+-- Anyone can read reviews (shown on experience cards)
+create policy "Anyone can read reviews"
+  on reviews for select
+  using (true);
+
+-- Authenticated users can insert their own reviews
+create policy "Users insert own reviews"
+  on reviews for insert
+  to authenticated
+  with check (auth.uid() = user_id);
+
+-- Users can update their own reviews
+create policy "Users update own reviews"
+  on reviews for update
+  to authenticated
+  using (auth.uid() = user_id);
+
+-- 4. Set a user's role (run per user, replace the placeholders)
 -- update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' where email = 'admin@example.com';
 -- update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"super_admin"}' where email = 'superadmin@example.com';`;
 
